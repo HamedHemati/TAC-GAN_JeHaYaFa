@@ -59,7 +59,7 @@ class NetD(nn.Module):
         self.lin_clsf = nn.Linear(in_features=d, out_features=self.num_classes)
         self.LeakyReLU = nn.LeakyReLU(negative_slope=0.01)
         self.Sigmoid = nn.Sigmoid()
-        self.Softmax = nn.Softmax()
+        self.LogSoftmax = nn.LogSoftmax()
         self.apply(normal_init)
 
     def forward(self, input):
@@ -70,5 +70,5 @@ class NetD(nn.Module):
         x = self.LeakyReLU(self.conv5(x))
         x = x.view(x.size(0), self.d)
         s = self.Sigmoid(self.lin_disc(x))
-        c = self.Softmax(self.lin_clsf(x))
+        c = self.LogSoftmax(self.lin_clsf(x))
         return s,c 
