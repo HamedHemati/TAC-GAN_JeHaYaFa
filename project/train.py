@@ -11,6 +11,7 @@ import os
 import torchvision.datasets as dset
 import torchvision.transforms as transforms
 
+
 class TACGAN():
     def __init__(self, args):
         # class variables
@@ -42,8 +43,8 @@ class TACGAN():
             self.ce_loss = self.ce_loss.cuda() 
 
         # optimizers for both netD and netG
-        self.optimizerD = optim.Adam(params=self.netD.parameters(), lr=self.lr)
-        self.optimizerG = optim.Adam(params=self.netG.parameters(), lr=self.lr)
+        self.optimizerD = optim.Adam(params=self.netD.parameters(), lr=self.lr, betas=(0.5, 0.999))
+        self.optimizerG = optim.Adam(params=self.netG.parameters(), lr=self.lr, betas=(0.5, 0.999))
 
         # create dir for saving checkpoints if does not exist
         if not os.path.exists(self.save_dir):
@@ -170,7 +171,7 @@ if __name__=='__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--batch-size', type=int, default=32)
     parser.add_argument('--epochs', type=int, default=50)
-    parser.add_argument('--lr', type=float, default=0.01)
+    parser.add_argument('--lr', type=float, default=0.0002)
     parser.add_argument('--use-cuda', action='store_true')
     parser.add_argument('--resume-training', action='store_true')
     parser.add_argument('--netg-path', type=str, default='')
