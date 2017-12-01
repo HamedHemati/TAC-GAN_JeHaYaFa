@@ -48,7 +48,7 @@ Extract the `text_c10` folder and the `allclasses.txt` and paste it in the `Data
 4. Run the flowers dataset preparation:
     
     ```
-    python dataprep_flowers.py --data_dir=Data --dataset=flowers
+    python data_prep.py --data_dir=Data --dataset=flowers
     ```
 
     This script will create a set of pickled files in the `Data/datasets/flowers` directory which
@@ -74,7 +74,7 @@ doing the following.
  4. Run the COCO dataset preparation
     
     ```
-    python dataprep_flowers.py --data_dir=Data --dataset=coco
+    python data_prep.py --data_dir=Data --dataset=coco
     ```
     
     This script will create a set of pickled files in the `Data/datasets/coco` directory which

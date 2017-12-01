@@ -1,185 +1,187 @@
-import torch
-from torch.utils.data import Dataset
-import torchvision.transforms as transforms
-from PIL import Image
-from os import listdir
-from os import path
+import os
+import argparse
+import traceback
+import pickle
+import random
+import time
+
 import numpy as np
+from os.path import join
 
-def get_one_hot_targets(target_file_path):
-	target = []
-	one_hot_targets = []
-	n_target = 0
-	try :
-		with open(target_file_path) as f :
-			target = f.readlines()
-			target = [t.strip('\n') for t in target]
-			n_target = len(target)
-	except IOError :
-		print('Could not load the labels.txt file in the dataset. A '
-		      'dataset folder is expected in the "data/datasets" '
-		      'directory with the name that has been passed as an '
-		      'argument to this method. This directory should contain a '
-		      'file called labels.txt which contains a list of labels and '
-		      'corresponding folders for the labels with the same name as '
-		      'the labels.')
-		traceback.print_stack()
+import skipthoughts
+from pycocotools.coco import COCO
 
-	lbl_idxs = np.arange(n_target)
-	one_hot_targets = np.zeros((n_target, n_target))
-	one_hot_targets[np.arange(n_target), lbl_idxs] = 1
 
-	return target, one_hot_targets, n_target
+def get_one_hot_targets(target: list):
+    n_target = len(target)
+    lbl_idxs = np.arange(n_target)
+    one_hot_targets = np.zeros((n_target, n_target))
+    one_hot_targets[np.arange(n_target), lbl_idxs] = 1
+
+    return target, one_hot_targets, n_target
+
+
+def get_one_hot_targets_from_file(target_file_path):
+    try:
+        with open(target_file_path) as f:
+            target = f.readlines()
+            target = [t.strip('\n') for t in target]
+            return get_one_hot_targets(target)
+    except IOError:
+        print('Could not load the labels.txt file in the dataset. A '
+              'dataset folder is expected in the "data/datasets" '
+              'directory with the name that has been passed as an '
+              'argument to this method. This directory should contain a '
+              'file called labels.txt which contains a list of labels and '
+              'corresponding folders for the labels with the same name as '
+              'the labels.')
+        traceback.print_stack()
+
 
 def one_hot_encode_str_lbl(lbl, target, one_hot_targets):
-        '''
-        Encodes a string label into one-hot encoding
-        Example:
-            input: "window"
-            output: [0 0 0 0 0 0 1 0 0 0 0 0]
-        the length would depend on the number of labels in the dataset. The
-        above is just a random example.
-        :param lbl: The string label
-        :return: one-hot encoding
-        '''
-        idx = target.index(lbl)
-        return one_hot_targets[idx]
+    """
+    Encodes a string label into one-hot encoding
 
-class flowers(Dataset):
-    def __init__(self, labeled_img_list, labels, captions):
-        self.__data = labeled_img_list
-        self.__labels = labels
-        self.__captions = captions
-        self.__transform = flowers.__transform()
+    Example:
+        input: "window"
+        output: [0 0 0 0 0 0 1 0 0 0 0 0]
+    the length would depend on the number of classes in the dataset. The
+    above is just a random example.
 
-    def __getitem__(self, index):
-        img = self.__transform(Image.open(self.__data[index][0]))
-        lab = self.__labels.index(self.__data[index][1])
-        cap = self.__captions.index(self.__data[index[2]])
-        return img, lab, cap
+    :param lbl: The string label
+    :return: one-hot encoding
+    """
+    idx = target.index(lbl)
+    return one_hot_targets[idx]
 
-    def __len__(self):
-        return len(self.__data)
 
-    def resolve_label(self, index):
-        return self.__labels[index]
+def save_caption_vectors_coco(data_dir):
+    """Prepares the COCO dataset.
 
-    def get_label(self, index):
-        return self.__data[index][1]
+    :param data_dir: The path to the data directory. Needs to contain a jpg directory with the images and
+        an annotations directory with the JSON files.
+    :type data_dir: str
+    """
 
-    def get_labels(self):
-        return self.__labels
+    data_type = 'train2017'
+    instances_file = '{}/annotations/instances_{}.json'.format(join(data_dir, 'coco'), data_type)
+    captions_file = '{}/annotations/captions_{}.json'.format(join(data_dir, 'coco'), data_type)
 
-    def resolve_caption(self, index):
-        return self.__captions[index]
+    coco = COCO(instances_file)
+    coco_caps = COCO(captions_file)
 
-    def get_caption(self, index):
-        return self.__data[index][2]
+    cats = coco.loadCats(coco.getCatIds())
+    class_names = [cat['name'] for cat in cats]
+    # TODO: filter class names?
 
-    def get_captions(self):
-        return self.__captions
+    # make one hot
+    target, one_hot_targets, n_target = get_one_hot_targets(class_names)
 
-    def get_unique_captions(self):
-        return set(self.__captions)
+    image_captions = {}
+    image_classes = {}
 
-    def get_data(self):
-        return self.__data
+    # get all images belonging to class and store in image_classes and image_captions
+    for class_name in class_names:
+        cat_id = coco.getCatIds(class_name)
+        img_ids = coco.getImgIds(catIds=cat_id)
 
-    def get_full_img_name(self, index):
-        return self.__data[index][0]
+        image_class = one_hot_encode_str_lbl(class_name, target, one_hot_targets)
 
-    @staticmethod
-    def __transform():
-        return transforms.Compose([
-            transforms.Scale((128, 128)),
-            transforms.ToTensor(),
-            transforms.Normalize((0.5,), (1.0,))
-        ])
+        for img_id in img_ids:
+            img_file_name = '%.12d.jpg' % img_id
+            image_classes[img_file_name] = image_class
 
-    @staticmethod
-    def get_sets(root='Data/datasets/flowers/', get_full_set=False):
-        class_range =(1, 103)
-        img_dir = path.join(root, 'jpg')
-        all_caps_dir = path.join(root, 'all_captions.txt')
-        target_file_path = path.join(root, "allclasses.txt")
-        caption_dir = path.join(root, 'text_c10')
+            ann_ids = coco_caps.getAnnIds(imgIds=img_id)
+            annotations = coco_caps.loadAnns(ann_ids)
+            image_captions[img_file_name] = [annotation['caption'] for annotation in annotations][0:5]
 
-        image_files = [f for f in listdir(img_dir) if 'jpg' in f]
+    encode_and_save(image_captions, image_classes, data_dir, 'coco')
 
-        if get_full_set:
-            return_set = []
-        else:
-            return_set = {'train': [], 'valid': [], 'test': []}
-        labels = []
 
-        image_captions = {}
-        image_labels = {}
-        label_dirs = []
-        label_names = []
-        #img_ids = []
-        imgs = listdir(img_dir)
+def save_caption_vectors_flowers(data_dir, dt_range=(1, 103)):
+    target_file_path = os.path.join(data_dir, "flowers/allclasses.txt")
+    caption_dir = join(data_dir, 'flowers/text_c10')
+    image_captions = {}
+    image_classes = {}
+    class_dirs = []
+    class_names = []
 
-        target, one_hot_targets, n_target = get_one_hot_targets(target_file_path)
+    target, one_hot_targets, n_target = get_one_hot_targets_from_file(target_file_path)
 
-        for i in range(class_range[0], class_range[1]):
-            label_dir_name = 'class_%.5d' % (i)
-            label_dir = path.join(caption_dir, label_dir_name)
-            label_names.append(label_dir_name)
-            label_dirs.append(label_dir)
-            onlyimgfiles = [f[0:11] + ".jpg" for f in listdir(label_dir)
-                            if 'txt' in f]
-            for img_file in onlyimgfiles:
-                image_labels[img_file] = None
+    for i in range(dt_range[0], dt_range[1]):  # for each class
+        class_dir_name = 'class_%.5d' % i
+        class_dir = join(caption_dir, class_dir_name)
+        class_names.append(class_dir_name)
+        class_dirs.append(class_dir)
+        onlyimgfiles = [f[0:11] + ".jpg" for f in os.listdir(class_dir) if 'txt' in f]
+        for img_file in onlyimgfiles:
+            image_classes[img_file] = None
+            image_captions[img_file] = []
 
-            for img_file in onlyimgfiles:
-                image_captions[img_file] = []
+    for class_dir, class_name in zip(class_dirs, class_names):
+        caption_files = [f for f in os.listdir(class_dir) if 'txt' in f]
+        for i, cap_file in enumerate(caption_files):
+            if i % 50 == 0:
+                print(str(i) + ' captions extracted from' + str(class_dir))
+            with open(join(class_dir, cap_file)) as f:
+                str_captions = f.read()
+                captions = str_captions.split('\n')
+            img_file = cap_file[0:11] + ".jpg"
 
-        for label_dir, label_name in zip(label_dirs, label_names):
-            caption_files = [f for f in listdir(label_dir) if 'txt' in f]
-            for i, cap_file in enumerate(caption_files):
-                if i % 50 == 0:
-                    print(str(i) + ' captions extracted from' + str(label_dir))
-                with open(path.join(label_dir, cap_file)) as f:
-                    str_captions = f.read()
-                    captions = str_captions.split('\n')
-                img_file = cap_file[0:11] + ".jpg"
+            # 5 captions per image
+            image_captions[img_file] += [cap for cap in captions if len(cap) > 0][0:5]
+            image_classes[img_file] = one_hot_encode_str_lbl(class_name,
+                                                             target,
+                                                             one_hot_targets)
 
-                # 5 captions per image
-                image_captions[img_file] += [cap for cap in captions if len(cap) > 0][0:5]
-                image_labels[img_file] = one_hot_encode_str_lbl(label_name,
-                                                                 target,
-                                                                 one_hot_targets)
-        img_ids = list(image_captions.keys())
+    encode_and_save(image_captions, image_classes, data_dir, 'flowers')
 
-        if not get_full_set:
-            train_upper_b = int(0.7*len(imgs))
-            valid_upper_b = int(train_upper_b + 0.2*len(imgs))
-        for idi, i in enumerate(imgs):
-            append_val = [path.join(img_dir, i), image_labels[i], image_captions[i]]
 
-            if get_full_set:
-                return_set.append(append_val)
-            else:
-                if idi < train_upper_b:
-                    add_to = 'train'
-                elif idi < valid_upper_b:
-                    add_to = 'valid'
-                else:
-                    add_to = 'test'
-                return_set[add_to].append([path.join(img_dir, i), image_labels[i], image_captions[i]])
-        if get_full_set:
-            return flowers(return_set, labels, captions)
-        else:
-            return (
-                flowers(return_set['train'], labels, captions),
-                flowers(return_set['valid'], labels, captions),
-                flowers(return_set['test'], labels, captions)
-            )
+def encode_and_save(image_captions, image_classes, data_dir: str, dataset: str):
+    model = skipthoughts.load_model()
+    encoded_captions = {}
+    for i, img in enumerate(image_captions):
+        st = time.time()
+        encoded_captions[img] = skipthoughts.encode(model, image_captions[img])
+        if i % 20 == 0:
+            print(i, len(image_captions), img)
+            print("Seconds", time.time() - st)
+
+    img_ids = list(image_captions.keys())
+
+    random.shuffle(img_ids)
+    n_train_instances = int(len(img_ids) * 0.9)
+    tr_image_ids = img_ids[0:n_train_instances]
+    val_image_ids = img_ids[n_train_instances:-1]
+
+    pickle.dump(image_captions, open(os.path.join(data_dir, dataset, dataset + '_caps.pkl'), "wb"))
+
+    pickle.dump(tr_image_ids, open(os.path.join(data_dir, dataset, 'train_ids.pkl'), "wb"))
+    pickle.dump(val_image_ids, open(os.path.join(data_dir, dataset, 'val_ids.pkl'), "wb"))
+
+    ec_pkl_path = join(data_dir, dataset, dataset + '_tv.pkl')
+    pickle.dump(encoded_captions, open(ec_pkl_path, "wb"))
+
+    fc_pkl_path = join(data_dir, dataset, dataset + '_tc.pkl')
+    pickle.dump(image_classes, open(fc_pkl_path, "wb"))
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--data_dir', type=str, default='Data',
+                        help='Data directory')
+    parser.add_argument('--dataset', type=str, default='flowers',
+                        help='Dataset to use. "flowers" or "coco"')
+    args = parser.parse_args()
+
+    dataset_dir = join(args.data_dir, "datasets")
+    if args.dataset == 'flowers':
+        save_caption_vectors_flowers(dataset_dir)
+    if args.dataset == 'coco':
+        save_caption_vectors_coco(dataset_dir)
+    else:
+        print('Preprocessor for this dataset is not available.')
 
 
 if __name__ == '__main__':
-    big_set = flowers.get_sets(get_full_set=True)
-
-    print(big_set.get_label(2))
-    print(big_set.get_caption(2))
-    print(big_set.get_full_img_name(2))
+    main()
