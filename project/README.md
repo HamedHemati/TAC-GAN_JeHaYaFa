@@ -13,18 +13,24 @@ Install all other requirements by running `pip install -r requirements.txt`.
 ## Data Preparation
 We assume that we store the datasets in a `Data` directory in the root directory of this project throughout this data preparation.
 
-Independent of the dataset, download the [pre-trained skip-thought vectors model](https://github.com/ryankiros/skip-thoughts#getting-started) 
+Independent of the dataset, the skip-thought vectors need to be downloaded.
+ 
+ 1. Download the [pre-trained skip-thought vectors model](https://github.com/ryankiros/skip-thoughts#getting-started) 
 into the directory `Data/skipthoughts` by executing:
     
-    wget http://www.cs.toronto.edu/~rkiros/models/dictionary.txt
-    wget http://www.cs.toronto.edu/~rkiros/models/utable.npy
-    wget http://www.cs.toronto.edu/~rkiros/models/btable.npy
-    wget http://www.cs.toronto.edu/~rkiros/models/uni_skip.npz
-    wget http://www.cs.toronto.edu/~rkiros/models/uni_skip.npz.pkl
-    wget http://www.cs.toronto.edu/~rkiros/models/bi_skip.npz
-    wget http://www.cs.toronto.edu/~rkiros/models/bi_skip.npz.pkl
+        wget http://www.cs.toronto.edu/~rkiros/models/dictionary.txt
+        wget http://www.cs.toronto.edu/~rkiros/models/utable.npy
+        wget http://www.cs.toronto.edu/~rkiros/models/btable.npy
+        wget http://www.cs.toronto.edu/~rkiros/models/uni_skip.npz
+        wget http://www.cs.toronto.edu/~rkiros/models/uni_skip.npz.pkl
+        wget http://www.cs.toronto.edu/~rkiros/models/bi_skip.npz
+        wget http://www.cs.toronto.edu/~rkiros/models/bi_skip.npz.pkl
     
-Adjust the `path_to_models` and `path_to_labels` (lines 23 and 24) in `skipthoughts.py` if you use another data directory than `Data`.
+ 2. Adjust the `path_to_models` and `path_to_labels` (lines 23 and 24) in `skipthoughts.py` if you use another data directory than `Data`.
+ 3. Install the required tokenizers with a Python script:
+    
+        import nltk
+        nltk.download('punkt')
 
 ### Flowers Dataset
 To train the TAC-GAN on the flowers dataset, download the dataset by
