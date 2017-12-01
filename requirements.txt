@@ -2,6 +2,7 @@ Cython
 nltk==3.2.1
 matplotlib
 numpy
+scikit-image
 scipy
 Theano==0.9.0
 torch
