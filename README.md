@@ -66,7 +66,7 @@ Extract the `text_c10` folder and the `allclasses.txt` and paste it in the `Data
     will be used during training.
 
 ATTENTION: The TensorFlow implementation will raise an error when the flowers dataset is prepared with this implementation.
-It is necessary to change the file names of two pickle files in the `Data/datasets/flowers` directory:
+It is necessary to change the names of two pickle files in the `Data/datasets/flowers` directory:
 
  - `flowers_tc.pkl` to `flower_tc.pkl`
  - `flowers_tv.pkl` to `flower_tv.pkl`
@@ -75,14 +75,13 @@ It is necessary to change the file names of two pickle files in the `Data/datase
 To train the TAC-GAN on the COCO dataset, download the dataset by
 doing the following.
 
- 1. Download the dataset from http://cocodataset.org/
+ 1. Download the [COCO dataset](http://cocodataset.org/)
      - [2017 Train images](http://images.cocodataset.org/zips/train2017.zip)
      - [2017 Train/Val annotations](http://images.cocodataset.org/annotations/annotations_trainval2017.zip)
- 2. Extract both archives to the folder `Data/datasets/coco`
-    
-    1. Rename the folder `train2017` to `jpg`
- 3. Run `make` in the directory `pycocotools`
- 4. Run the COCO dataset preparation
+ 2. Extract both archives to the folder `Data/datasets/coco`.
+ 3. Rename the folder `train2017` to `jpg`.
+ 4. Run `make` in the directory `pycocotools`.
+ 5. Run the COCO dataset preparation:
     
     ```
     python data_prep.py --data_dir=Data --dataset=coco
