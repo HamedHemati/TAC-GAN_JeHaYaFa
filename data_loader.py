@@ -1,7 +1,11 @@
+import os
+import pickle
+
+import numpy as np
+import skimage.io
 import torch
 from torch.utils.data import Dataset
-import numpy as np
-import torchvision.transforms  as transforms
+import torchvision.transforms as transforms
 
 
 class DumbDataset(Dataset):
@@ -21,61 +25,66 @@ class DumbDataset(Dataset):
 
 
 class PickleDataset(Dataset):
+    """
+    Usage:
+    > dataset = PickleDataset('/home/fbalsiger/Documents/data', 'flowers')
+    """
 
-    def __init__(self, data_dir: str, dataset: str):
+    def __init__(self, data_dir: str, dataset: str, train: bool=True):
         super(PickleDataset, self).__init__()
         self.data_dir = data_dir
         self.dataset = dataset
+        self.image_dir = os.path.join(self.data_dir, 'datasets', dataset, 'jpg')
 
+        self.train = train  # determines whether to return train or validation images
 
+        self.train_ids = []  # list of training ids, i.e. file names of the images
+        self.val_ids = []  # list of validation ids, i.e. file names of the images
+        self.captions = {}  # list with 5 captions per id
+        self.captions_encoded = {}  # array with the encoded captions per id. array shape is (5, 4800)
+        self.classes = {}  # one-hot vector encoding the class
 
-class flowers(Dataset):
-    def __init__(self, labeled_img_list, labels, captions):
-        self.__data = labeled_img_list
-        self.__labels = labels
-        self.__captions = captions
-        self.__transform = flowers.__transform()
+        self._load_pickle_files()
 
     def __getitem__(self, index):
-        img = self.__transform(Image.open(self.__data[index][0]))
-        lab = self.__labels.index(self.__data[index][1])
-        cap = self.__captions.index(self.__data[index[2]])
-        return img, lab, cap
+        if self.train:
+            id = self.train_ids[index]
+        else:
+            id = self.val_ids[index]
+
+        image_path = os.path.join(self.image_dir, id)
+        image = skimage.io.imread(image_path)
+
+        return image, self.classes[id], self.captions_encoded[id], self.captions[id]
 
     def __len__(self):
-        return len(self.__data)
+        if self.train:
+            return len(self.train_ids)
+        else:
+            return len(self.val_ids)
 
-    def resolve_label(self, index):
-        return self.__labels[index]
+    def _load_pickle_files(self):
+        # generate file paths
+        path = os.path.join(self.data_dir, 'datasets', self.dataset)
 
-    def get_label(self, index):
-        return self.__data[index][1]
+        train_ids_file = os.path.join(path, 'train_ids.pkl')
+        val_ids_file = os.path.join(path, 'val_ids.pkl')
+        captions_file = os.path.join(path, self.dataset + '_caps.pkl')
+        captions_encoded_file = os.path.join(path, self.dataset + '_tv.pkl')
+        classes_file = os.path.join(path, self.dataset + '_tc.pkl')
 
-    def get_labels(self):
-        return self.__labels
+        # load pickle files
+        self.train_ids = pickle.load(open(train_ids_file, 'rb'))
+        self.val_ids = pickle.load(open(val_ids_file, 'rb'))
+        self.captions = pickle.load(open(captions_file, 'rb'))
+        self.captions_encoded = pickle.load(open(captions_encoded_file, 'rb'))
+        self.classes = pickle.load(open(classes_file, 'rb'))
 
-    def resolve_caption(self, index):
-        return self.__captions[index]
-
-    def get_caption(self, index):
-        return self.__data[index][2]
-
-    def get_captions(self):
-        return self.__captions
-
-    def get_unique_captions(self):
-        return set(self.__captions)
-
-    def get_data(self):
-        return self.__data
-
-    def get_full_img_name(self, index):
-        return self.__data[index][0]
-
-    @staticmethod
-    def __transform():
-        return transforms.Compose([
-            transforms.Scale((128, 128)),
-            transforms.ToTensor(),
-            transforms.Normalize((0.5,), (1.0,))
-        ])
+    # Yannick had this transform implemented and applied it to the loaded image...?
+    # @staticmethod
+    # def _transform():
+    #     return transforms.Compose([
+    #         transforms.Scale((128, 128)),
+    #         transforms.ToTensor(),
+    #         transforms.Normalize((0.5,), (1.0,))
+    #     ])
