@@ -4,3 +4,5 @@ matplotlib
 numpy
 scipy
 Theano==0.9.0
+torch
+torchvision
