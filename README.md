@@ -1,4 +1,4 @@
-# VDL-JeHaYaFa
+# TAC-GAN_JeHaYaFa
 
 This repository contains exercises and the project for the Very Deep Learning lecture at University of Fribourg, Switerland.
 Our group consists of:
