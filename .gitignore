@@ -273,3 +273,6 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+### Project specific stuff
+_mask.c
