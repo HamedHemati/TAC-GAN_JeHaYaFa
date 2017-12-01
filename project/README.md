@@ -1,58 +1,69 @@
 # TAC-GAN
 
-This is a TAC-GAN (https://arxiv.org/abs/1703.06412) implementation in PyTorch.
+A [TAC-GAN](https://arxiv.org/abs/1703.06412) implementation in PyTorch. The original TensorFlow implementation can be found [here](https://github.com/dashayushman/TAC-GAN).
+Following files were copied from the original implementation:
+
+ - `dataprep_flowers.py` (modified to include the COCO dataset)
+ - `skipthoughts.py`
 
 ## Requirements
-TBD: add requirements
+The project requires Python 3.5.2. 
+Install all other requirements by running `pip install -r requirements.txt`.
 
- - Python 3.5
- - PyTorch ???
- - Theano 0.9.0 : for skip thought vectors
- - scikit-learn : for skip thought vectors
- - NLTK 3.2.1 : for skip thought vectors
- 
-## Flowers Dataset
+## Data Preparation
+We assume that we store the datasets in a `Data` directory in the root directory of this project throughout this data preparation.
+
+Independent of the dataset, download the [pre-trained skip-thought vectors model](https://github.com/ryankiros/skip-thoughts#getting-started) 
+into the directory `Data/skipthoughts` by executing:
+    
+    wget http://www.cs.toronto.edu/~rkiros/models/dictionary.txt
+    wget http://www.cs.toronto.edu/~rkiros/models/utable.npy
+    wget http://www.cs.toronto.edu/~rkiros/models/btable.npy
+    wget http://www.cs.toronto.edu/~rkiros/models/uni_skip.npz
+    wget http://www.cs.toronto.edu/~rkiros/models/uni_skip.npz.pkl
+    wget http://www.cs.toronto.edu/~rkiros/models/bi_skip.npz
+    wget http://www.cs.toronto.edu/~rkiros/models/bi_skip.npz.pkl
+    
+Adjust the `path_to_models` and `path_to_labels` (lines 23 and 24) in `skipthoughts.py` if you use another data directory than `Data`.
+
+### Flowers Dataset
 To train the TAC-GAN on the flowers dataset, download the dataset by
 doing the following.
 
 1. Download the flower images from
 [here](http://www.robots.ox.ac.uk/~vgg/data/flowers/102/102flowers.tgz).
-Extract the ```102flowers.tgz``` file and copy the extracted ```jpg``` folder
- to ```Data/datasets/flowers```
+Extract the `102flowers.tgz` file and copy the extracted `jpg` folder
+ to `Data/datasets/flowers`.
 
 2. Download the captions from
 [here](https://drive.google.com/file/d/0B0ywwgffWnLLcms2WWJQRFNSWXM/).
-Extract the downloaded file, copy the text_c10 folder and paste it in ```
-Data/datasets/flowers``` directory
+Extract the `text_c10` folder and the `allclasses.txt` and paste it in the `Data/datasets/flowers` directory.
 
-3. Download the pretrained skip-thought vectors model from
-[here](https://github.com/ryankiros/skip-thoughts#getting-started) and copy
-the downloaded files to ```Data/skipthoughts```
-
-4. Run the flowers dataset preparation
+4. Run the flowers dataset preparation:
     
     ```
     python dataprep_flowers.py --data_dir=Data --dataset=flowers
     ```
 
-    This script will create a set of pickled files in the `Data` directory which
-    will be used during training. The following are the available flags for data preparation:
-    
-    FLAG | VALUE TYPE | DEFAULT VALUE | DESCRIPTION
-    --- | --- | --- | ---
-    data_dir | str | Data | The data directory |
-    dataset | str | flowers | Dataset to use. For Eg., "flowers" |
+    This script will create a set of pickled files in the `Data/datasets/flowers` directory which
+    will be used during training.
 
-## COCO Dataset
+### COCO Dataset
 To train the TAC-GAN on the COCO dataset, download the dataset by
 doing the following.
 
  1. Download the dataset from http://cocodataset.org/
-     - 2017 Train images: http://images.cocodataset.org/zips/train2017.zip
-     - 2017 Train/Val annotations: http://images.cocodataset.org/annotations/annotations_trainval2017.zip
- 2. Extract both archives to a directory of your choice, e.g. `Data`
- 3. Run the COCO dataset preparation
+     - [2017 Train images](http://images.cocodataset.org/zips/train2017.zip)
+     - [2017 Train/Val annotations](http://images.cocodataset.org/annotations/annotations_trainval2017.zip)
+ 2. Extract both archives to the folder `Data/datasets/coco`
+    
+    1. Rename the folder `train2017` to `jpg`
+ 3. Run `make` in the directory `project/pycocotools`
+ 4. Run the COCO dataset preparation
     
     ```
-    python dataprep_coco.py --data_dir=Data --dataset=coco
+    python dataprep_flowers.py --data_dir=Data --dataset=coco
     ```
+    
+    This script will create a set of pickled files in the `Data/datasets/coco` directory which
+    will be used during training.
