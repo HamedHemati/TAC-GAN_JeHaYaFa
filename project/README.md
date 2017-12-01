@@ -54,6 +54,12 @@ Extract the `text_c10` folder and the `allclasses.txt` and paste it in the `Data
     This script will create a set of pickled files in the `Data/datasets/flowers` directory which
     will be used during training.
 
+ATTENTION: The TensorFlow implementation will raise an error when the flowers dataset is prepared with this implementation.
+It is necessary to change the file names of two pickle files in the `Data/datasets/flowers` directory:
+
+ - `flowers_tc.pkl` to `flower_tc.pkl`
+ - `flowers_tv.pkl` to `flower_tv.pkl`
+
 ### COCO Dataset
 To train the TAC-GAN on the COCO dataset, download the dataset by
 doing the following.
