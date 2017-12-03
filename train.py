@@ -81,17 +81,19 @@ class TACGAN():
             lbl_real = Variable(torch.ones(batch_size, 1))
             lbl_fake = Variable(torch.zeros(batch_size, 1))
             noise = Variable(torch.randn(batch_size, self.n_z)) # create random noise
+            rnd_perm = torch.randperm(batch_size)
             if self.cuda:
                 images, labels, captions = images.cuda(), labels.cuda(), captions.cuda()
                 lbl_real, lbl_fake = lbl_real.cuda(), lbl_fake.cuda()
                 noise = noise.cuda()
+                rnd_perm = rnd_perm.cuda()
             
             ############### Update NetD ###############
             self.netD.zero_grad()       
             # train with wrong image, wrong label, real caption
-            outD_wrong, outC_wrong = self.netD(images[torch.randperm(batch_size)], captions)
+            outD_wrong, outC_wrong = self.netD(images[rnd_perm], captions)
             lossD_wrong = self.bce_loss(outD_wrong, lbl_fake)
-            lossC_wrong = self.nll_loss(outC_wrong, torch.max(labels[torch.randperm(batch_size)],1)[1])
+            lossC_wrong = self.nll_loss(outC_wrong, torch.max(labels[rnd_perm],1)[1])
 
             # train with real image, real label, real caption
             outD_real, outC_real = self.netD(images, captions)
