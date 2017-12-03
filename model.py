@@ -3,13 +3,13 @@ import torch.nn as nn
 
 
 # NetG - Generator
-'''
-n_z  : length of the input noise
-n_l  : lenght of the latent representations
-n_t  : length of the skip-thought vector
-n_c  : number of feature maps after first conv layer
-'''
 class NetG(nn.Module):
+    '''
+    n_z  : length of the input noise
+    n_l  : lenght of the latent representations
+    n_t  : length of the skip-thought vector
+    n_c  : number of feature maps after first conv layer
+    '''
 
     def __init__(self, n_z=100, n_l=100, n_t=4800, n_c=64):
         super(NetG, self).__init__()
@@ -64,13 +64,14 @@ class NetG(nn.Module):
 
 
 # Discriminator Network - D(x)
-'''
-n_cls : number of classes in the dataset
-n_t   : lenght of the embedding after applying the transformation
-n_f   : number of filters in the first convolutional layer
-m_d   : size of the image before concatenation with the embedding
-'''
 class NetD(nn.Module):
+    '''
+    n_cls : number of classes in the dataset
+    n_t   : lenght of the embedding after applying the transformation
+    n_f   : number of filters in the first convolutional layer
+    m_d   : size of the image before concatenation with the embedding
+    '''
+    
     def __init__(self, n_cls=102, n_t=256, n_f=64, m_d=8):
         super(NetD, self).__init__()
         
