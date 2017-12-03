@@ -115,7 +115,7 @@ class NetD(nn.Module):
         x = self.LeakyReLU(self.conv3_bn(self.conv3(x)))
         x = self.LeakyReLU(self.conv4_bn(self.conv4(x)))
         emb = self.LeakyReLU(self.fc_emb(skip_v))
-        emb = emb.view(emb.size(0), self.n_t/(self.m_d*self.m_d), self.m_d, self.m_d) # state size: 4* 8x8
+        emb = emb.view(emb.size(0), int(self.n_t/(self.m_d*self.m_d)), self.m_d, self.m_d) # state size: 4* 8x8
         emb = emb.repeat(1,96,1,1) # state size: 384* 4x4 (tiles the reshaped embedding for 96 times)
         x = torch.cat([x,emb], 1)
         x = self.LeakyReLU(self.conv5(x))
