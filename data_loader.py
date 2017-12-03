@@ -29,7 +29,6 @@ class ImTextDataset(Dataset):
         self.classes = {}  # one-hot vector encoding the class
         self.trans_img = transforms.Compose([transforms.Scale(image_size), transforms.CenterCrop(image_size),
                                              transforms.ToTensor(),]) # transformation for output image 
-        self.trans_skv = transforms.Compose([transforms.ToTensor(),]) # transformation for skip-thought vectors                                    
         self._load_pickle_files()
 
     def __getitem__(self, index):
