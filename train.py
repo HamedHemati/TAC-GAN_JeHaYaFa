@@ -31,6 +31,7 @@ class TACGAN():
         self.save_after = args.save_after
         self.trainset_loader = None
         self.evalset_loader = None  
+        self.num_workers = args.num_workers
         self.n_z = 100 # length of the noise vector
         self.bce_loss = nn.BCELoss()
         self.nll_loss = nn.NLLLoss()
@@ -180,5 +181,6 @@ if __name__=='__main__':
     parser.add_argument('--save-dir', type=str, default='checkpoints/')
     parser.add_argument('--save-prefix', type=str, default='')
     parser.add_argument('--save-after', type=int, default=5)
+    parser.add_argument('--num-workers', type=int, default=2)
     args = parser.parse_args()
     main(args)
