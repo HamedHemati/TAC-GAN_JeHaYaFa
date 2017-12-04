@@ -11,7 +11,7 @@ class NetG(nn.Module):
     n_c  : number of feature maps after first conv layer
     '''
 
-    def __init__(self, n_z=100, n_l=100, n_t=4800, n_c=64):
+    def __init__(self, n_z=100, n_l=256, n_t=4800, n_c=64):
         super(NetG, self).__init__()
         self.n_z = n_z
         self.n_l = n_l
@@ -31,22 +31,26 @@ class NetG(nn.Module):
         self.convtr4 = nn.ConvTranspose2d(in_channels=n_c, out_channels=3, kernel_size=4, stride=2, padding=1, bias=True)
         #self.convtr4_bn = nn.BatchNorm2d(num_features=3) #! user batch normalization for the last layer?
         # state size: 128 x 128 
-        
+
+        # batch normalization for the reshaped noise
+        self.emb_bn = nn.BatchNorm2d(8*n_c)
         # linear transformation for the skip-thought vector
         self.lin_emb = nn.Linear(in_features=n_t, out_features=n_l)
         # linear transformation for the concatenated noise
         self.lin_zc = nn.Linear(in_features=n_z+n_l, out_features=8*8*(8*n_c))
         # funcationals
         self.ReLU = nn.ReLU()
+        self.LeakyReLU = nn.LeakyReLU()
         self.Tanh = nn.Tanh()
         # initialize the weights
         self.intialize_weights_()
         
     def forward(self, noise, skip_v):
-        emb = self.ReLU(self.lin_emb(skip_v)) 
+        emb = self.LeakyReLU(self.lin_emb(skip_v)) 
         z_c = torch.cat([noise,emb],1) # concatenate the noise and embedding
-        x = self.ReLU(self.lin_zc(z_c)) #! use ReLU or Leaky ReLU?
+        x = self.lin_zc(z_c)
         x = x.view(x.size(0), 8*self.n_c, 8, 8) # state size: (8*n_c) x 8 x 8
+        x = self.ReLU(self.emb_bn(x))
         x = self.ReLU(self.convtr1_bn(self.convtr1(x)))
         x = self.ReLU(self.convtr2_bn(self.convtr2(x)))
         x = self.ReLU(self.convtr3_bn(self.convtr3(x)))
