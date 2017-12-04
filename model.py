@@ -51,6 +51,7 @@ class NetG(nn.Module):
         x = self.ReLU(self.convtr2_bn(self.convtr2(x)))
         x = self.ReLU(self.convtr3_bn(self.convtr3(x)))
         x = self.Tanh(self.convtr4(x))
+        x = (x/2.0) + 0.5
         return x
 
     def intialize_weights_(self):
