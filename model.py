@@ -93,7 +93,7 @@ class NetD(nn.Module):
         self.conv4 = nn.Conv2d(in_channels=n_f*4, out_channels=n_f*6, kernel_size=4, stride=2, padding=1, bias=True)
         self.conv4_bn = nn.BatchNorm2d(n_f*6)
         # state size: 8 x 8
-        self.conv5 = nn.Conv2d(in_channels=2*n_f*6, out_channels=n_f*8, kernel_size=1, stride=1, padding=0, bias=True)
+        self.conv5 = nn.Conv2d(in_channels=n_f*6+n_t, out_channels=n_f*8, kernel_size=1, stride=1, padding=0, bias=True)
         # state size: 8 x 8
 
         # linear transformation for the skip-thought vector
@@ -116,8 +116,8 @@ class NetD(nn.Module):
         x = self.LeakyReLU(self.conv3_bn(self.conv3(x)))
         x = self.LeakyReLU(self.conv4_bn(self.conv4(x)))
         emb = self.LeakyReLU(self.fc_emb(skip_v))
-        emb = emb.view(emb.size(0), int(self.n_t/(self.m_d*self.m_d)), self.m_d, self.m_d) # state size: 4* 8x8
-        emb = emb.repeat(1,96,1,1) # state size: 384* 4x4 (tiles the reshaped embedding for 96 times)
+        emb = emb.view(emb.size(0), self.n_t, 1, 1) # state size: batch x n_t x 1 x 1
+        emb = emb.repeat(1, 1, self.m_d, self.m_d) # state size: batch x n_t x 8 x 8
         x = torch.cat([x,emb], 1)
         x = self.LeakyReLU(self.conv5(x))
         x = x.view(x.size(0), self.m_d*self.m_d*self.n_f*8)
