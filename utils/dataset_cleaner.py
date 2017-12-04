@@ -40,8 +40,8 @@ def removeGrayImages(directory, dataset='coco'):
     classes = pickle.load(open(classes_file, 'rb'))
 
     for key in lst:
-        del train_ids[key]
-        del val_ids[key]
+        train_ids.remove(key)
+        val_ids.remove(key)
         del captions[key]
         del captions_encoded[key]
         del classes[key]
