@@ -26,6 +26,7 @@ class TACGAN():
         self.num_classes = args.num_cls
         self.save_dir = args.save_dir
         self.save_prefix = args.save_prefix
+        self.continue_training = args.continue_training
         self.netG_path = args.netg_path
         self.netD_path = args.netd_path
         self.save_after = args.save_after
@@ -46,7 +47,7 @@ class TACGAN():
             self.bce_loss = self.bce_loss.cuda()
             self.nll_loss = self.nll_loss.cuda() 
 
-        # optimizers for both netD and netG
+        # optimizers for netD and netG
         self.optimizerD = optim.Adam(params=self.netD.parameters(), lr=self.lr, betas=(0.5, 0.999))
         self.optimizerG = optim.Adam(params=self.netG.parameters(), lr=self.lr, betas=(0.5, 0.999))
 
@@ -60,12 +61,15 @@ class TACGAN():
         imtext_ds = ImTextDataset(data_dir=self.data_root, dataset=self.dataset, train=True, image_size=self.image_size)
         self.trainset_loader = DataLoader(dataset=imtext_ds, batch_size=self.batch_size, shuffle=True, num_workers=2)
         print("Dataset loaded successfuly")
-        
+        # load checkpoints for continuing training
+        if args.continue_training:
+            self.loadCheckpoints()
+             
         # repeat for the number of epochs
         for epoch in range(self.epochs):
             self.trainEpoch(epoch)
             #self.evalEpoch(epoch)
-            self.saveCheckpoint(epoch)
+            self.saveCheckpoints(epoch)
 
     # train epoch
     def trainEpoch(self, epoch):
@@ -124,7 +128,7 @@ class TACGAN():
             netd_loss_sum += netD_loss.data[0]
             netg_loss_sum += netG_loss.data[0]
             ### print progress info ###
-            print('epoch %d/%d, %.2f%% completed. Loss_D: %.4f, Loss_G: %.4f'
+            print('Epoch %d/%d, %.2f%% completed. Loss_NetD: %.4f, Loss_NetG: %.4f'
                   %(epoch, self.epochs,(float(i)/len(self.trainset_loader))*100, netD_loss.data[0], netG_loss.data[0]))
        
         end_time = time()
@@ -133,7 +137,7 @@ class TACGAN():
             netd_avg_loss = netd_loss_sum / len(self.trainset_loader)
             netg_avg_loss = netg_loss_sum / len(self.trainset_loader)
             log_msg = '-------------------------------------------\n'
-            log_msg += 'epoch %d took %.2f minutes\n'%(epoch, epoch_time)
+            log_msg += 'Epoch %d took %.2f minutes\n'%(epoch, epoch_time)
             log_msg += 'NetD average loss: %.4f, NetG average loss: %.4f\n' %(netd_avg_loss, netg_avg_loss)
             log_msg += '-------------------------------------------\n\n'
             print(log_msg)
@@ -147,19 +151,19 @@ class TACGAN():
         return 0
 
     # save after each epoch
-    def saveCheckpoint(self, epoch):
+    def saveCheckpoints(self, epoch):
         if epoch%self.save_after==0:
             name_netD = "netD_" + self.save_prefix + "_epoch_" + str(epoch) + ".pth"
             name_netG = "netG_" + self.save_prefix + "_epoch_" + str(epoch) + ".pth"
             torch.save(self.netD.state_dict(), os.path.join(self.save_dir, name_netD))
             torch.save(self.netG.state_dict(), os.path.join(self.save_dir, name_netG))
-            print("checkpoints for epoch %d saved successfuly" %(epoch))
+            print("Checkpoints for epoch %d saved successfuly" %(epoch))
 
     # load checkpoints to continue training
-    def loadCheckpoint(self):
+    def loadCheckpoints(self):
         self.netG.load_state_dict(torch.load(self.netG_path))
         self.netD.load_state_dict(torch.load(self.netD_path))
-        print("checkpoints loaded successfuly")
+        print("Checkpoints loaded successfuly")
          
 
 def main(args):
@@ -173,7 +177,7 @@ if __name__=='__main__':
     parser.add_argument('--epochs', type=int, default=200)
     parser.add_argument('--lr', type=float, default=0.0002)
     parser.add_argument('--use-cuda', action='store_true')
-    parser.add_argument('--resume-training', action='store_true')
+    parser.add_argument('--continue-training', action='store_true')
     parser.add_argument('--netg-path', type=str, default='')
     parser.add_argument('--netd-path', type=str, default='')
     parser.add_argument('--image-size', type=int, default=128)
