@@ -85,6 +85,7 @@ class TACGAN():
             lbl_real = Variable(torch.ones(batch_size, 1))
             lbl_fake = Variable(torch.zeros(batch_size, 1))
             noise = Variable(torch.randn(batch_size, self.n_z)) # create random noise
+            noise.data.normal_(0,1) # normalize the noise
             rnd_perm = torch.randperm(batch_size)
             if self.cuda:
                 images, labels, captions = images.cuda(), labels.cuda(), captions.cuda()
@@ -130,7 +131,7 @@ class TACGAN():
             ### print progress info ###
             print('Epoch %d/%d, %.2f%% completed. Loss_NetD: %.4f, Loss_NetG: %.4f'
                   %(epoch, self.epochs,(float(i)/len(self.trainset_loader))*100, netD_loss.data[0], netG_loss.data[0]))
-       
+            
         end_time = time()
         if i%5 == 0:
             epoch_time = (end_time-start_time)/60
