@@ -82,6 +82,7 @@ class TACGAN():
         for i, (images, labels, captions) in enumerate(self.trainset_loader):
             batch_size = images.size(0) # !batch size my be different (from self.batch_size) for the last batch
             images, labels, captions = Variable(images), Variable(labels), Variable(captions) # !labels should be LongTensor
+            labels = labels.type(torch.FloatTensor) # convert to FloatTensor (from DoubleTensor)
             lbl_real = Variable(torch.ones(batch_size, 1))
             lbl_fake = Variable(torch.zeros(batch_size, 1))
             noise = Variable(torch.randn(batch_size, self.n_z)) # create random noise
@@ -98,18 +99,18 @@ class TACGAN():
             # train with wrong image, wrong label, real caption
             outD_wrong, outC_wrong = self.netD(images[rnd_perm], captions)
             lossD_wrong = self.bce_loss(outD_wrong, lbl_fake)
-            lossC_wrong = self.nll_loss(outC_wrong, torch.max(labels[rnd_perm],1)[1])
+            lossC_wrong = self.bce_loss(outC_wrong, labels[rnd_perm])
 
             # train with real image, real label, real caption
             outD_real, outC_real = self.netD(images, captions)
             lossD_real = self.bce_loss(outD_real, lbl_real)
-            lossC_real = self.nll_loss(outC_real, torch.max(labels,1)[1])
+            lossC_real = self.bce_loss(outC_real, labels)
 
             # train with fake image, real label, real caption
             fake = self.netG(noise, captions)
             outD_fake, outC_fake = self.netD(fake.detach(), captions)
             lossD_fake = self.bce_loss(outD_fake, lbl_fake)
-            lossC_fake = self.nll_loss(outC_fake, torch.max(labels,1)[1])
+            lossC_fake = self.bce_loss(outC_fake, labels)
             
             # backward and forwad for NetD
             netD_loss = lossC_wrong+lossC_real+lossC_fake + lossD_wrong+lossD_real+lossD_fake
@@ -121,9 +122,9 @@ class TACGAN():
             self.netG.zero_grad()
             d_fake, c_fake = self.netD(fake, captions)
             lossD_fake_G = self.bce_loss(d_fake, lbl_real)
-            lossC_fake_G = self.nll_loss(c_fake, torch.max(labels,1)[1])
+            lossC_fake_G = self.bce_loss(c_fake, labels)
             netG_loss = lossD_fake_G + lossC_fake_G 
-            netG_loss.backward()
+            netG_loss.backward()    
             self.optimizerG.step()
             
             netd_loss_sum += netD_loss.data[0]
@@ -131,7 +132,7 @@ class TACGAN():
             ### print progress info ###
             print('Epoch %d/%d, %.2f%% completed. Loss_NetD: %.4f, Loss_NetG: %.4f'
                   %(epoch, self.epochs,(float(i)/len(self.trainset_loader))*100, netD_loss.data[0], netG_loss.data[0]))
-            
+
         end_time = time()
         if i%5 == 0:
             epoch_time = (end_time-start_time)/60
