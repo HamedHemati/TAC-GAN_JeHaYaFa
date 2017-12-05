@@ -4,54 +4,95 @@ from scipy.misc import imread
 import os.path
 import pickle
 
+
 def removeGrayImages(directory, dataset='coco'):
 
-    image_dir = join(directory, 'jpg')
-    fileList = listdir(image_dir)
+    # image_dir = join(directory, 'jpg')
+    # fileList = listdir(image_dir)
+    #
+    # count = 0
+    # lst = []
+    # for i,file in enumerate(fileList):
+    #     path = join(image_dir, file)
+    #     img = imread(path)
+    #     # print('checking '+str(i)+'/'+str(l))
+    #     if len(img.shape) != 3:
+    #         # remove(path)
+    #         count+=1
+    #         lst.append(file)
+    #         print(file)
+    #
+    # print('number of gray images: ' + str(count))
+    # print('these files were removed:')
+    # print(lst)
 
-    count = 0
-    lst = []
-    for i,file in enumerate(fileList):
-        path = join(image_dir, file)
-        img = imread(path)
-        # print('checking '+str(i)+'/'+str(l))
-        if len(img.shape) != 3:
-            # remove(path)
-            count+=1
-            lst.append(file)
-            print(file)
-            
-    print('number of gray images: ' + str(count))
-    print('these files were removed:')
-    print(lst)
+    lst = ['000000377984.jpg', '000000176483.jpg', '000000421195.jpg', '000000087509.jpg', '000000263002.jpg',
+     '000000450674.jpg', '000000058517.jpg', '000000046433.jpg', '000000321897.jpg', '000000484742.jpg',
+     '000000563376.jpg', '000000491058.jpg', '000000505962.jpg', '000000270925.jpg', '000000439589.jpg',
+     '000000131366.jpg', '000000249711.jpg', '000000343009.jpg', '000000406744.jpg', '000000208206.jpg',
+     '000000205782.jpg', '000000103499.jpg', '000000155954.jpg', '000000140092.jpg', '000000571503.jpg',
+     '000000015286.jpg', '000000077709.jpg', '000000072098.jpg', '000000123539.jpg', '000000280731.jpg',
+     '000000410498.jpg', '000000358281.jpg', '000000075052.jpg', '000000145288.jpg', '000000104124.jpg',
+     '000000226585.jpg', '000000564314.jpg', '000000233263.jpg', '000000353952.jpg', '000000549879.jpg',
+     '000000470933.jpg', '000000496444.jpg', '000000166522.jpg', '000000269858.jpg', '000000243205.jpg',
+     '000000520479.jpg', '000000225717.jpg', '000000210847.jpg', '000000000821.jpg', '000000221691.jpg',
+     '000000445845.jpg', '000000525513.jpg', '000000503640.jpg', '000000035880.jpg', '000000122051.jpg',
+     '000000494273.jpg', '000000443909.jpg', '000000389206.jpg', '000000012345.jpg', '000000397575.jpg',
+     '000000416869.jpg', '000000008794.jpg', '000000406404.jpg', '000000081003.jpg', '000000176397.jpg',
+     '000000061048.jpg', '000000470442.jpg', '000000005294.jpg', '000000039068.jpg', '000000173610.jpg',
+     '000000032405.jpg', '000000113929.jpg', '000000436984.jpg', '000000463454.jpg', '000000429633.jpg',
+     '000000107450.jpg', '000000300200.jpg', '000000380088.jpg', '000000381270.jpg', '000000363331.jpg',
+     '000000006432.jpg', '000000394322.jpg', '000000105872.jpg', '000000155811.jpg', '000000060060.jpg',
+     '000000369966.jpg', '000000210175.jpg', '000000560349.jpg', '000000057978.jpg', '000000228474.jpg',
+     '000000018702.jpg', '000000579239.jpg', '000000518025.jpg', '000000576700.jpg', '000000064332.jpg',
+     '000000066642.jpg', '000000361516.jpg', '000000575029.jpg', '000000325387.jpg', '000000025404.jpg',
+     '000000220770.jpg', '000000155083.jpg', '000000132791.jpg', '000000449901.jpg', '000000389984.jpg',
+     '000000566596.jpg', '000000268036.jpg', '000000111109.jpg', '000000173081.jpg', '000000053756.jpg',
+     '000000480482.jpg', '000000377837.jpg', '000000559665.jpg', '000000578250.jpg', '000000492395.jpg',
+     '000000010125.jpg', '000000118895.jpg', '000000394547.jpg', '000000434837.jpg', '000000577265.jpg',
+     '000000507794.jpg', '000000039900.jpg', '000000040428.jpg', '000000003293.jpg', '000000555583.jpg',
+     '000000406011.jpg', '000000573179.jpg', '000000510587.jpg', '000000416372.jpg', '000000561842.jpg',
+     '000000330736.jpg', '000000093120.jpg', '000000039790.jpg', '000000336668.jpg', '000000107962.jpg',
+     '000000312288.jpg', '000000223616.jpg', '000000537427.jpg', '000000434765.jpg', '000000347111.jpg',
+     '000000140623.jpg', '000000220898.jpg', '000000400107.jpg', '000000517899.jpg', '000000134071.jpg',
+     '000000126531.jpg', '000000001350.jpg', '000000540378.jpg', '000000259284.jpg', '000000509358.jpg',
+     '000000260962.jpg', '000000207339.jpg', '000000217341.jpg', '000000034861.jpg', '000000134918.jpg',
+     '000000296884.jpg', '000000186888.jpg', '000000361221.jpg', '000000064270.jpg', '000000213280.jpg',
+     '000000011801.jpg', '000000384907.jpg', '000000349069.jpg', '000000390663.jpg', '000000100896.jpg',
+     '000000384693.jpg', '000000029275.jpg', '000000095753.jpg', '000000000086.jpg', '000000492325.jpg',
+     '000000033352.jpg', '000000342051.jpg', '000000577207.jpg', '000000205486.jpg', '000000316867.jpg',
+     '000000427401.jpg', '000000150354.jpg', '000000476888.jpg', '000000384910.jpg', '000000134206.jpg',
+     '000000401901.jpg', '000000451074.jpg', '000000454000.jpg', '000000185639.jpg', '000000249835.jpg',
+     '000000431115.jpg', '000000498856.jpg', '000000211867.jpg', '000000386204.jpg', '000000204792.jpg',
+     '000000080906.jpg', '000000385625.jpg', '000000027412.jpg', '000000342921.jpg', '000000015236.jpg',
+     '000000156878.jpg', '000000030349.jpg', '000000457741.jpg', '000000426558.jpg', '000000131942.jpg',
+     '000000443689.jpg', '000000341892.jpg', '000000124694.jpg', '000000140627.jpg', '000000264165.jpg',
+     '000000563447.jpg', '000000293833.jpg', '000000287422.jpg', '000000518951.jpg', '000000571415.jpg',
+     '000000313608.jpg', '000000006379.jpg', '000000179405.jpg', '000000458073.jpg', '000000451095.jpg',
+     '000000579138.jpg', '000000532787.jpg', '000000257178.jpg', '000000264753.jpg', '000000084582.jpg',
+     '000000217886.jpg', '000000532919.jpg', '000000421613.jpg', '000000250239.jpg', '000000154053.jpg',
+     '000000033127.jpg', '000000085407.jpg']
 
     # load pickles
+    # it is sufficient to modify the training and validation ids
     train_ids_file = os.path.join(directory, 'train_ids.pkl')
     val_ids_file = os.path.join(directory, 'val_ids.pkl')
-    captions_file = os.path.join(directory, dataset + '_caps.pkl')
-    captions_encoded_file = os.path.join(directory, dataset + '_tv.pkl')
-    classes_file = os.path.join(directory, dataset + '_tc.pkl')
-
-    # load pickle files
     train_ids = pickle.load(open(train_ids_file, 'rb'))
     val_ids = pickle.load(open(val_ids_file, 'rb'))
-    captions = pickle.load(open(captions_file, 'rb'))
-    captions_encoded = pickle.load(open(captions_encoded_file, 'rb'))
-    classes = pickle.load(open(classes_file, 'rb'))
 
     for key in lst:
-        train_ids.remove(key)
-        val_ids.remove(key)
-        del captions[key]
-        del captions_encoded[key]
-        del classes[key]
+        try:
+            train_ids.remove(key)
+        except ValueError:
+            pass
+        try:
+            val_ids.remove(key)
+        except ValueError:
+            pass
+
 
     pickle.dump(train_ids, open(train_ids_file, "wb"))
     pickle.dump(val_ids, open(val_ids_file, "wb"))
-    pickle.dump(captions, open(captions_file, "wb"))
-    pickle.dump(captions_encoded, open(captions_encoded_file, "wb"))
-    pickle.dump(classes, open(classes_file, "wb"))
-
 
 # just change the input directory
 removeGrayImages('/home/fbalsiger/Documents/data/datasets/coco')
