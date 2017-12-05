@@ -87,19 +87,22 @@ class TACGAN():
             lbl_fake = Variable(torch.zeros(batch_size, 1))
             noise = Variable(torch.randn(batch_size, self.n_z)) # create random noise
             noise.data.normal_(0,1) # normalize the noise
-            rnd_perm = torch.randperm(batch_size)
+            rnd_perm1 = torch.randperm(batch_size) # random permutations for different sets of training couples
+            rnd_perm2 = torch.randperm(batch_size)
+            rnd_perm3 = torch.randperm(batch_size)
+            rnd_perm4 = torch.randperm(batch_size)
             if self.cuda:
                 images, labels, captions = images.cuda(), labels.cuda(), captions.cuda()
                 lbl_real, lbl_fake = lbl_real.cuda(), lbl_fake.cuda()
                 noise = noise.cuda()
-                rnd_perm = rnd_perm.cuda()
+                rnd_perm1, rnd_perm2, rnd_perm3, rnd_perm4 = rnd_perm1.cuda(), rnd_perm2.cuda(), rnd_perm3.cuda(), rnd_perm4.cuda()
             
             ############### Update NetD ###############
             self.netD.zero_grad()       
             # train with wrong image, wrong label, real caption
-            outD_wrong, outC_wrong = self.netD(images[rnd_perm], captions)
+            outD_wrong, outC_wrong = self.netD(images[rnd_perm1], captions[rnd_perm2])
             lossD_wrong = self.bce_loss(outD_wrong, lbl_fake)
-            lossC_wrong = self.bce_loss(outC_wrong, labels[rnd_perm])
+            lossC_wrong = self.bce_loss(outC_wrong, labels[rnd_perm1])
 
             # train with real image, real label, real caption
             outD_real, outC_real = self.netD(images, captions)
@@ -108,9 +111,9 @@ class TACGAN():
 
             # train with fake image, real label, real caption
             fake = self.netG(noise, captions)
-            outD_fake, outC_fake = self.netD(fake.detach(), captions)
+            outD_fake, outC_fake = self.netD(fake.detach(), captions[rnd_perm3])
             lossD_fake = self.bce_loss(outD_fake, lbl_fake)
-            lossC_fake = self.bce_loss(outC_fake, labels)
+            lossC_fake = self.bce_loss(outC_fake, labels[rnd_perm3])
             
             # backward and forwad for NetD
             netD_loss = lossC_wrong+lossC_real+lossC_fake + lossD_wrong+lossD_real+lossD_fake
@@ -120,9 +123,11 @@ class TACGAN():
             ########## Update NetG ##########
             # train with fake data
             self.netG.zero_grad()
-            d_fake, c_fake = self.netD(fake, captions)
+            noise.data.normal_(0,1) # normalize the noise vector
+            fake = self.netG(noise, captions[rnd_perm4])
+            d_fake, c_fake = self.netD(fake, captions[rnd_perm4])
             lossD_fake_G = self.bce_loss(d_fake, lbl_real)
-            lossC_fake_G = self.bce_loss(c_fake, labels)
+            lossC_fake_G = self.bce_loss(c_fake, labels[rnd_perm4])
             netG_loss = lossD_fake_G + lossC_fake_G 
             netG_loss.backward()    
             self.optimizerG.step()
