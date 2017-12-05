@@ -11,7 +11,7 @@ class NetG(nn.Module):
     n_c  : number of feature maps after first conv layer
     '''
 
-    def __init__(self, n_z=100, n_l=256, n_t=4800, n_c=64):
+    def __init__(self, n_z=100, n_l=100, n_t=4800, n_c=64):
         super(NetG, self).__init__()
         self.n_z = n_z
         self.n_l = n_l

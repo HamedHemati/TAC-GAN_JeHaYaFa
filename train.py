@@ -11,6 +11,9 @@ from model import NetD, NetG
 import torchvision.datasets as dset
 import torchvision.transforms as transforms
 from data_loader import ImTextDataset
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 
 
 class TACGAN():
@@ -53,12 +56,28 @@ class TACGAN():
         self.optimizerD = optim.Adam(params=self.netD.parameters(), lr=self.lr, betas=(0.5, 0.999))
         self.optimizerG = optim.Adam(params=self.netG.parameters(), lr=self.lr, betas=(0.5, 0.999))
 
-        # create dir for saving checkpoints if does not exist
+        # create dir for saving checkpoints and other results if do not exist
         if not os.path.exists(self.save_dir):
             os.makedirs(self.save_dir)
+        if not os.path.exists(os.path.join(self.save_dir,'netd_checkpoints')):
+            os.makedirs(os.path.join(self.save_dir,'netd_checkpoints'))
+        if not os.path.exists(os.path.join(self.save_dir,'netg_checkpoints')):            
+            os.makedirs(os.path.join(self.save_dir,'netg_checkpoints')) 
+        if not os.path.exists(os.path.join(self.save_dir,'generated_images')):            
+            os.makedirs(os.path.join(self.save_dir,'generated_images'))
 
     # start training process
     def train(self):
+        # write to the log file and print it
+        log_msg = '********************************************\n'
+        log_msg += '             Training settings\n'
+        log_msg += 'Dataset:%s\nImage size:%dx%d\n'%(self.dataset, self.image_size, self.image_size)
+        log_msg += 'Number of epochs:%d\nlr:%f\n'%(self.epochs,self.lr)
+        log_msg += 'nz:%d\nnl-d:%d\nnl-g:%d\n'%(self.n_z, self.nl_d, self.nl_g)  
+        log_msg += '********************************************\n\n'
+        print(log_msg)
+        with open(os.path.join(self.save_dir, 'training_log'),'a') as log_file:
+            log_file.write(log_msg)
         # load trainset and evalset
         imtext_ds = ImTextDataset(data_dir=self.data_root, dataset=self.dataset, train=True, image_size=self.image_size)
         self.trainset_loader = DataLoader(dataset=imtext_ds, batch_size=self.batch_size, shuffle=True, num_workers=2)
@@ -68,8 +87,13 @@ class TACGAN():
             self.loadCheckpoints()
              
         # repeat for the number of epochs
+        netd_losses = []
+        netg_losses = []
         for epoch in range(self.epochs):
-            self.trainEpoch(epoch)
+            netd_loss, netg_loss = self.trainEpoch(epoch)
+            netd_losses.append(netd_loss)
+            netg_losses.append(netg_loss)
+            self.saveGraph(netd_losses,netg_losses)
             #self.evalEpoch(epoch)
             self.saveCheckpoints(epoch)
 
@@ -141,29 +165,39 @@ class TACGAN():
                   %(epoch, self.epochs,(float(i)/len(self.trainset_loader))*100, netD_loss.data[0], netG_loss.data[0]))
 
         end_time = time()
+        netd_avg_loss = netd_loss_sum / len(self.trainset_loader)
+        netg_avg_loss = netg_loss_sum / len(self.trainset_loader)
         if i%5 == 0:
             epoch_time = (end_time-start_time)/60
-            netd_avg_loss = netd_loss_sum / len(self.trainset_loader)
-            netg_avg_loss = netg_loss_sum / len(self.trainset_loader)
             log_msg = '-------------------------------------------\n'
             log_msg += 'Epoch %d took %.2f minutes\n'%(epoch, epoch_time)
-            log_msg += 'NetD average loss: %.4f, NetG average loss: %.4f\n' %(netd_avg_loss, netg_avg_loss)
-            log_msg += '-------------------------------------------\n\n'
+            log_msg += 'NetD average loss: %.4f, NetG average loss: %.4f\n\n' %(netd_avg_loss, netg_avg_loss)
             print(log_msg)
             with open(os.path.join(self.save_dir, 'training_log'),'a') as log_file:
                 log_file.write(log_msg)
+        return netd_avg_loss, netg_avg_loss
 
     # eval epoch                   
     def evalEpoch(self, epoch):
         #self.netD.eval()
         #self.netG.eval()
         return 0
+    
+    # draws and saves the loss graph upto the current epoch
+    def saveGraph(self, netd_losses, netg_losses):
+        plt.plot(netd_losses, color='red', label='NetD Loss')
+        plt.plot(netg_losses, color='blue', label='NetG Loss')
+        plt.xlabel('epoch')
+        plt.ylabel('error')
+        plt.legend(loc='best')
+        plt.savefig(os.path.join(self.save_dir,'loss_graph.png'))
+        plt.close()
 
     # save after each epoch
     def saveCheckpoints(self, epoch):
         if epoch%self.save_after==0:
-            name_netD = "netD_" + self.save_prefix + "_epoch_" + str(epoch) + ".pth"
-            name_netG = "netG_" + self.save_prefix + "_epoch_" + str(epoch) + ".pth"
+            name_netD = "netd_checkpoints/netD_" + self.save_prefix + "_epoch_" + str(epoch) + ".pth"
+            name_netG = "netg_checkpoints/netG_" + self.save_prefix + "_epoch_" + str(epoch) + ".pth"
             torch.save(self.netD.state_dict(), os.path.join(self.save_dir, name_netD))
             torch.save(self.netG.state_dict(), os.path.join(self.save_dir, name_netG))
             print("Checkpoints for epoch %d saved successfuly" %(epoch))
@@ -187,7 +221,7 @@ if __name__=='__main__':
     parser.add_argument('--lr', type=float, default=0.0002)
     parser.add_argument('--n-z', type=int, default=100)
     parser.add_argument('--nl-d', type=int, default=256)
-    parser.add_argument('--nl-g', type=int, default=256)
+    parser.add_argument('--nl-g', type=int, default=100)
     parser.add_argument('--use-cuda', action='store_true')
     parser.add_argument('--continue-training', action='store_true')
     parser.add_argument('--netg-path', type=str, default='')
@@ -196,7 +230,7 @@ if __name__=='__main__':
     parser.add_argument('--data-root', type=str, default='')
     parser.add_argument('--dataset', type=str, default='flowers')
     parser.add_argument('--num-cls', type=int, default=102)
-    parser.add_argument('--save-dir', type=str, default='checkpoints/')
+    parser.add_argument('--save-dir', type=str, default='outputs/')
     parser.add_argument('--save-prefix', type=str, default='')
     parser.add_argument('--save-after', type=int, default=5)
     parser.add_argument('--num-workers', type=int, default=2)
