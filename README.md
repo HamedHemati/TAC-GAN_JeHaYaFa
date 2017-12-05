@@ -1,6 +1,6 @@
 # TAC-GAN_JeHaYaFa
 
-This repository contains exercises and the project for the Very Deep Learning lecture at University of Fribourg, Switerland.
+This repository contains exercises and the project for the Very Deep Learning lecture at the University of Fribourg, Switzerland.
 Our group consists of:
 
  - Ajayi Jesutofunmi
@@ -14,8 +14,9 @@ Our group consists of:
 A [TAC-GAN](https://arxiv.org/abs/1703.06412) implementation in PyTorch. The original TensorFlow implementation can be found [here](https://github.com/dashayushman/TAC-GAN).
 Following files were copied from the original implementation:
 
- - `dataprep_flowers.py` (modified to include the COCO dataset)
+ - `dataprep_flowers.py`: renamed to `data_prep.py` and modified to include the COCO dataset
  - `skipthoughts.py`
+ - `train.py`: see the `tensorflow` directory
 
 ## Requirements
 The project requires Python 3.5.2. 
