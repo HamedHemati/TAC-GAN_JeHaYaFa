@@ -87,7 +87,7 @@ class TACGAN():
             lbl_fake = Variable(torch.zeros(batch_size, 1))
             noise = Variable(torch.randn(batch_size, self.n_z)) # create random noise
             noise.data.normal_(0,1) # normalize the noise
-            rnd_perm1 = torch.randperm(batch_size) # random permutations for different sets of training couples
+            rnd_perm1 = torch.randperm(batch_size) # random permutations for different sets of training tuples
             rnd_perm2 = torch.randperm(batch_size)
             rnd_perm3 = torch.randperm(batch_size)
             rnd_perm4 = torch.randperm(batch_size)
