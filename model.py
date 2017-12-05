@@ -55,7 +55,7 @@ class NetG(nn.Module):
         x = self.ReLU(self.convtr2_bn(self.convtr2(x)))
         x = self.ReLU(self.convtr3_bn(self.convtr3(x)))
         x = self.Tanh(self.convtr4(x))
-        x = (x/2.0) + 0.5
+        x = (x/2.0) + 0.5 # rescale the values to range [0,1]
         return x
 
     def intialize_weights_(self):
@@ -127,7 +127,7 @@ class NetD(nn.Module):
         x = x.view(x.size(0), self.m_d*self.m_d*self.n_f*8)
         x = self.LeakyReLU(self.fc_t(x))
         s = self.Sigmoid(self.fc_d(x))
-        c = self.LogSoftmax(self.fc_c(x))
+        c = self.Sigmoid(self.fc_c(x))
         return s,c 
 
     def intialize_weights_(self):
