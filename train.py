@@ -167,14 +167,13 @@ class TACGAN():
         end_time = time()
         netd_avg_loss = netd_loss_sum / len(self.trainset_loader)
         netg_avg_loss = netg_loss_sum / len(self.trainset_loader)
-        if i%5 == 0:
-            epoch_time = (end_time-start_time)/60
-            log_msg = '-------------------------------------------\n'
-            log_msg += 'Epoch %d took %.2f minutes\n'%(epoch, epoch_time)
-            log_msg += 'NetD average loss: %.4f, NetG average loss: %.4f\n\n' %(netd_avg_loss, netg_avg_loss)
-            print(log_msg)
-            with open(os.path.join(self.save_dir, 'training_log'),'a') as log_file:
-                log_file.write(log_msg)
+        epoch_time = (end_time-start_time)/60
+        log_msg = '-------------------------------------------\n'
+        log_msg += 'Epoch %d took %.2f minutes\n'%(epoch, epoch_time)
+        log_msg += 'NetD average loss: %.4f, NetG average loss: %.4f\n\n' %(netd_avg_loss, netg_avg_loss)
+        print(log_msg)
+        with open(os.path.join(self.save_dir, 'training_log'),'a') as log_file:
+            log_file.write(log_msg)
         return netd_avg_loss, netg_avg_loss
 
     # eval epoch                   
