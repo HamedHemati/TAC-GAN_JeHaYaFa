@@ -33,11 +33,13 @@ class TACGAN():
         self.trainset_loader = None
         self.evalset_loader = None  
         self.num_workers = args.num_workers
-        self.n_z = 100 # length of the noise vector
+        self.n_z = args.n_z # length of the noise vector
+        self.nl_d = args.nl_d
+        self.nl_g = args.nl_g
         self.bce_loss = nn.BCELoss()
         self.nll_loss = nn.NLLLoss()
-        self.netD = NetD(n_cls=self.num_classes)
-        self.netG = NetG(n_z=self.n_z)
+        self.netD = NetD(n_cls=self.num_classes, n_t=self.nl_d)
+        self.netG = NetG(n_z=self.n_z, n_l=self.nl_g)
         
         # convert to cuda tensors
         if self.cuda and torch.cuda.is_available():
@@ -183,6 +185,9 @@ if __name__=='__main__':
     parser.add_argument('--batch-size', type=int, default=64)
     parser.add_argument('--epochs', type=int, default=200)
     parser.add_argument('--lr', type=float, default=0.0002)
+    parser.add_argument('--n-z', type=int, default=100)
+    parser.add_argument('--nl-d', type=int, default=256)
+    parser.add_argument('--nl-g', type=int, default=256)
     parser.add_argument('--use-cuda', action='store_true')
     parser.add_argument('--continue-training', action='store_true')
     parser.add_argument('--netg-path', type=str, default='')
