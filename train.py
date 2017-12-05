@@ -219,7 +219,7 @@ if __name__=='__main__':
     parser.add_argument('--epochs', type=int, default=200)
     parser.add_argument('--lr', type=float, default=0.0002)
     parser.add_argument('--n-z', type=int, default=100)
-    parser.add_argument('--nl-d', type=int, default=256)
+    parser.add_argument('--nl-d', type=int, default=100)
     parser.add_argument('--nl-g', type=int, default=100)
     parser.add_argument('--use-cuda', action='store_true')
     parser.add_argument('--continue-training', action='store_true')
