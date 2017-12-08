@@ -15,6 +15,7 @@ A [TAC-GAN](https://arxiv.org/abs/1703.06412) implementation in PyTorch. The ori
 Following files were copied from the original implementation:
 
  - `dataprep_flowers.py`: renamed to `data_prep.py` and modified to include the COCO dataset
+ - `encode_text.py`
  - `skipthoughts.py`
  - `train.py`: see the `tensorflow` directory
 
