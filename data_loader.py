@@ -41,9 +41,9 @@ class ImTextDataset(Dataset):
         image =Image.open(image_path)
         image = self.trans_img(image)
         # pick a random encoded caption
-        rnd_encoded_caption = self.captions_encoded[id][random.randint(0,5)]
-        
-        return image, self.classes[id], rnd_encoded_caption
+        rnd = random.randint(0,5)
+        rnd_encoded_caption = self.captions_encoded[id][rnd]
+        return image, self.classes[id], rnd_encoded_caption, self.captions[id][rnd]
 
     def __len__(self):
         if self.train:
