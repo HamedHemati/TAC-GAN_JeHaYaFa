@@ -70,13 +70,14 @@ class TACGAN():
     def train(self):
         # write to the log file and print it
         log_msg = '********************************************\n'
-        log_msg += '             Training settings\n'
+        log_msg += '            Training Parameters\n'
         log_msg += 'Dataset:%s\nImage size:%dx%d\n'%(self.dataset, self.image_size, self.image_size)
+        log_msg += 'Batch size:%d\n'%(self.batch_size)
         log_msg += 'Number of epochs:%d\nlr:%f\n'%(self.epochs,self.lr)
         log_msg += 'nz:%d\nnl-d:%d\nnl-g:%d\n'%(self.n_z, self.nl_d, self.nl_g)  
         log_msg += '********************************************\n\n'
         print(log_msg)
-        with open(os.path.join(self.save_dir, 'training_log'),'a') as log_file:
+        with open(os.path.join(self.save_dir, 'training_log.txt'),'a') as log_file:
             log_file.write(log_msg)
         # load trainset and evalset
         imtext_ds = ImTextDataset(data_dir=self.data_root, dataset=self.dataset, train=True, image_size=self.image_size)
@@ -172,7 +173,7 @@ class TACGAN():
         log_msg += 'Epoch %d took %.2f minutes\n'%(epoch, epoch_time)
         log_msg += 'NetD average loss: %.4f, NetG average loss: %.4f\n\n' %(netd_avg_loss, netg_avg_loss)
         print(log_msg)
-        with open(os.path.join(self.save_dir, 'training_log'),'a') as log_file:
+        with open(os.path.join(self.save_dir, 'training_log.txt'),'a') as log_file:
             log_file.write(log_msg)
         return netd_avg_loss, netg_avg_loss
 
