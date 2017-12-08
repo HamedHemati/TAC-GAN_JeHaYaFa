@@ -39,10 +39,12 @@ class TACGAN():
         self.n_z = args.n_z # length of the noise vector
         self.nl_d = args.nl_d
         self.nl_g = args.nl_g
+        self.nf_g = args.nf_g
+        self.nf_d = args.nf_d
         self.bce_loss = nn.BCELoss()
         self.nll_loss = nn.NLLLoss()
-        self.netD = NetD(n_cls=self.num_classes, n_t=self.nl_d)
-        self.netG = NetG(n_z=self.n_z, n_l=self.nl_g)
+        self.netD = NetD(n_cls=self.num_classes, n_t=self.nl_d, n_f=self.nf_d)
+        self.netG = NetG(n_z=self.n_z, n_l=self.nl_g, n_c=self.nf_g)
         
         # convert to cuda tensors
         if self.cuda and torch.cuda.is_available():
@@ -74,7 +76,8 @@ class TACGAN():
         log_msg += 'Dataset:%s\nImage size:%dx%d\n'%(self.dataset, self.image_size, self.image_size)
         log_msg += 'Batch size:%d\n'%(self.batch_size)
         log_msg += 'Number of epochs:%d\nlr:%f\n'%(self.epochs,self.lr)
-        log_msg += 'nz:%d\nnl-d:%d\nnl-g:%d\n'%(self.n_z, self.nl_d, self.nl_g)  
+        log_msg += 'nz:%d\nnl-d:%d\nnl-g:%d\n'%(self.n_z, self.nl_d, self.nl_g)
+        log_msg += 'nf-g:%d\nnf-d:%d\n'%(self.nf_g, self.nf_d)  
         log_msg += '********************************************\n\n'
         print(log_msg)
         with open(os.path.join(self.save_dir, 'training_log.txt'),'a') as log_file:
@@ -222,6 +225,8 @@ if __name__=='__main__':
     parser.add_argument('--n-z', type=int, default=100)
     parser.add_argument('--nl-d', type=int, default=100)
     parser.add_argument('--nl-g', type=int, default=100)
+    parser.add_argument('--nf-g', type=int, default=64)
+    parser.add_argument('--nf-d', type=int, default=64)
     parser.add_argument('--use-cuda', action='store_true')
     parser.add_argument('--continue-training', action='store_true')
     parser.add_argument('--netg-path', type=str, default='')
