@@ -105,7 +105,7 @@ class TACGAN():
         netd_loss_sum = 0
         netg_loss_sum = 0
         start_time = time()
-        for i, (images, labels, captions) in enumerate(self.trainset_loader):
+        for i, (images, labels, captions, _) in enumerate(self.trainset_loader):
             batch_size = images.size(0) # !batch size my be different (from self.batch_size) for the last batch
             images, labels, captions = Variable(images), Variable(labels), Variable(captions) # !labels should be LongTensor
             labels = labels.type(torch.FloatTensor) # convert to FloatTensor (from DoubleTensor)
