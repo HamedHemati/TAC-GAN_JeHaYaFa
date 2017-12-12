@@ -91,3 +91,13 @@ doing the following.
     
     This script will create a set of pickled files in the `Data/datasets/coco` directory which
     will be used during training.
+
+## Experiments
+
+### COCO Dataset
+We perform three experiments with the COCO dataset:
+
+ 1. Full dataset
+ 2. 9 animal categories: ['cat', 'dog', 'horse', 'sheep', 'cow', 'elephant', 'bear', 'zebra', 'giraffe']
+ 3. 10 random categories: ['wine glass', 'cup', 'keyboard', 'cat', 'banana', 'surfboard', 'bus', 'truck', 'baseball glove', 'microwave']
+
