@@ -97,7 +97,8 @@ doing the following.
 ### COCO Dataset
 We perform three experiments with the COCO dataset:
 
- 1. Full dataset
- 2. 9 animal categories: ['cat', 'dog', 'horse', 'sheep', 'cow', 'elephant', 'bear', 'zebra', 'giraffe']
- 3. 10 random categories: ['wine glass', 'cup', 'keyboard', 'cat', 'banana', 'surfboard', 'bus', 'truck', 'baseball glove', 'microwave']
-
+ 1. Full dataset with 80 categories
+ 2. 9 animal categories
+    - replace [line 74 in `data_prep.py`](https://github.com/neuperc/TAC-GAN_JeHaYaFa/blob/master/data_prep.py#L74) with `class_names = ['cat', 'dog', 'horse', 'sheep', 'cow', 'elephant', 'bear', 'zebra', 'giraffe']`
+ 3. 10 randomly selected categories
+    - replace [line 74 in `data_prep.py`](https://github.com/neuperc/TAC-GAN_JeHaYaFa/blob/master/data_prep.py#L74) with `class_names = ['wine glass', 'cup', 'keyboard', 'cat', 'banana', 'surfboard', 'bus', 'truck', 'baseball glove', 'microwave']`
