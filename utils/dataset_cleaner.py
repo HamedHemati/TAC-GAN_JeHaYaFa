@@ -71,7 +71,8 @@ def removeGrayImages(directory, dataset='coco'):
      '000000313608.jpg', '000000006379.jpg', '000000179405.jpg', '000000458073.jpg', '000000451095.jpg',
      '000000579138.jpg', '000000532787.jpg', '000000257178.jpg', '000000264753.jpg', '000000084582.jpg',
      '000000217886.jpg', '000000532919.jpg', '000000421613.jpg', '000000250239.jpg', '000000154053.jpg',
-     '000000033127.jpg', '000000085407.jpg']
+     '000000033127.jpg', '000000085407.jpg', '000000576075.jpg', '000000492137.jpg', '000000209460.jpg',
+     '000000175202.jpg', '000000351910.jpg']
 
     # load pickles
     # it is sufficient to modify the training and validation ids
@@ -96,5 +97,3 @@ def removeGrayImages(directory, dataset='coco'):
 
 # just change the input directory
 removeGrayImages('/home/fbalsiger/Documents/data/datasets/coco')
-
-
