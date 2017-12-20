@@ -72,7 +72,13 @@ def save_caption_vectors_coco(data_dir):
 
     cats = coco.loadCats(coco.getCatIds())
     class_names = [cat['name'] for cat in cats]
-    # TODO: filter class names?
+    # class_names = ['cat', 'dog', 'horse', 'sheep', 'cow', 'elephant', 'bear', 'zebra', 'giraffe']
+
+    # random.shuffle(class_names)
+    # class_names = class_names[0:10]
+    class_names = ['wine glass', 'cup', 'keyboard', 'cat', 'banana', 'surfboard', 'bus', 'truck', 'baseball glove', 'microwave']
+
+    print(class_names)
 
     # make one hot
     target, one_hot_targets, n_target = get_one_hot_targets(class_names)
